@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Env / secrets
+.env
+.env.local
+
+# Generated outputs
+/output/*.jpg
+/output/*.jpeg
+/output/*.png
+/output/*.webp
+/output/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Node (if a frontend build is added later)
+node_modules/
+dist/

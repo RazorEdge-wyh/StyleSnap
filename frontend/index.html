@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StyleSnap · 照片 + 提示词 → 百种风格</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    colors: { brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3' } },
+    fontFamily: { sans: ['-apple-system','BlinkMacSystemFont','Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue','Arial','sans-serif'] }
+  }}}
+</script>
+<style>
+  body { -webkit-font-smoothing: antialiased; }
+  .fade-in { animation: fadeIn .35s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform:none;} }
+  .card-hover { transition: transform .18s ease, box-shadow .18s ease; }
+  .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -10px rgba(79,70,229,.45); }
+  .card-selected { outline: 3px solid #6366f1; outline-offset: 2px; }
+  .spinner { border:3px solid rgba(99,102,241,.2); border-top-color:#6366f1; border-radius:50%; width:22px; height:22px; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg);} }
+  .gradient-text { background:linear-gradient(90deg,#6366f1,#a855f7,#ec4899); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  ::-webkit-scrollbar { height:6px; width:6px; }
+  ::-webkit-scrollbar-thumb { background:#c7d2fe; border-radius:3px; }
+  #compare img { user-select:none; -webkit-user-drag:none; }
+</style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans">
+
+<!-- ============ Header ============ -->
+<header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">✨</span>
+      <a class="font-bold text-lg tracking-tight" href="/">Style<span class="gradient-text">Snap</span></a>
+      <span class="hidden sm:inline text-xs text-slate-400 ml-2" data-i18n="tagline">照片 + 提示词 → 百种风格</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="modeBadge" class="hidden items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium"></span>
+      <div class="flex text-xs font-medium border border-slate-200 rounded-lg overflow-hidden">
+        <button id="langZh" class="px-3 py-1.5 hover:bg-slate-100">中</button>
+        <button id="langEn" class="px-3 py-1.5 hover:bg-slate-100">EN</button>
+      </div>
+      <a href="https://github.com/RazorEdge-wyh/StyleSnap" target="_blank" class="text-sm text-slate-500 hover:text-brand-600" title="GitHub">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 pb-20">
+
+  <!-- ============ Hero ============ -->
+  <section class="text-center pt-10 pb-8">
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+      <span data-i18n="hero.title1">一张照片</span>，<span class="gradient-text" data-i18n="hero.title2">百种风格</span>
+    </h1>
+    <p class="mt-3 text-slate-500 max-w-2xl mx-auto" data-i18n="hero.sub">上传你的照片，选一个风格，AI 自动搭配好提示词，一键生成「平行世界的你」。全程无需写提示词，也可自由编辑。</p>
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+      <span class="px-3 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100" data-i18n="hero.point1">✓ 身份保持 · 更像你</span>
+      <span class="px-3 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100" data-i18n="hero.point2">✓ 免写提示词 · 即选即用</span>
+      <span class="px-3 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100" data-i18n="hero.point3">✓ 前后对比 · 一键全部</span>
+    </div>
+  </section>
+
+  <!-- ============ Upload ============ -->
+  <section id="uploadSection" class="max-w-3xl mx-auto">
+    <div id="dropzone"
+      class="border-2 border-dashed border-slate-300 rounded-2xl p-10 sm:p-14 text-center cursor-pointer hover:border-brand-400 hover:bg-brand-50/40 transition"
+      >
+      <div class="text-5xl mb-3">📷</div>
+      <p class="font-semibold" data-i18n="upload.title">拖拽照片到这里，或点击上传</p>
+      <p class="mt-1 text-sm text-slate-400" data-i18n="upload.hint">支持 JPG / PNG / WebP，建议人物正面照，效果最佳</p>
+      <input id="fileInput" type="file" accept="image/*" class="hidden" />
+    </div>
+
+    <!-- preview + controls -->
+    <div id="editor" class="hidden mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="grid sm:grid-cols-[220px_1fr]">
+        <div class="relative bg-slate-100">
+          <img id="preview" class="w-full h-full object-cover min-h-[220px]" alt="preview" />
+          <button id="removeBtn" class="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white text-xs px-2.5 py-1 rounded-full">✕</button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-500" data-i18n="editor.subject">照片主体描述（subject）</label>
+            <input id="subjectInput" type="text" value="this person"
+              class="mt-1 w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-400"
+              data-i18n-ph="editor.subjectPh" placeholder="this person — 例如：a smiling girl in a dress" />
+          </div>
+          <div>
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-slate-500" data-i18n="editor.prompt">AI 提示词（可自由编辑）</label>
+              <button id="resetPromptBtn" class="text-xs text-brand-600 hover:underline" data-i18n="editor.reset">重置模板</button>
+            </div>
+            <textarea id="promptInput" rows="3"
+              class="mt-1 w-full text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-400 font-mono resize-none"></textarea>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="generateBtn"
+              class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <span data-i18n="editor.generate">生成此风格</span> <span id="generateStyleName"></span>
+            </button>
+            <button id="batchBtn"
+              class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-500 hover:opacity-90 text-white text-sm font-semibold shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
+              ⚡ <span data-i18n="editor.batch">一键全部风格</span>
+            </button>
+            <span id="costHint" class="hidden text-xs text-slate-400"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Styles ============ -->
+  <section class="mt-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold" data-i18n="styles.title">选择风格</h2>
+      <span id="styleCount" class="text-xs text-slate-400"></span>
+    </div>
+    <div id="categoryChips" class="flex flex-wrap gap-2 mb-5"></div>
+    <div id="styleGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+  </section>
+
+  <!-- ============ Result ============ -->
+  <section id="resultSection" class="hidden mt-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold" data-i18n="result.title">结果</h2>
+      <span id="resultMode" class="text-xs text-slate-400"></span>
+    </div>
+    <div id="compare" class="relative rounded-2xl overflow-hidden shadow-lg border border-slate-200 select-none hidden" style="height:60vh; max-height:560px; min-height:320px">
+      <img id="cmpOriginal" class="absolute inset-0 w-full h-full object-cover" alt="original" />
+      <div id="cmpResultWrap" class="absolute inset-0 overflow-hidden">
+        <img id="cmpResult" class="w-full h-full object-cover" alt="result" />
+      </div>
+      <input id="cmpRange" type="range" min="0" max="100" value="50" class="absolute inset-y-0 left-0 w-full h-full opacity-0 cursor-ew-resize z-20" />
+      <div id="cmpHandle" class="absolute top-0 bottom-0 z-10 w-0.5 bg-white shadow" style="left:50%">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600">⇔</div>
+      </div>
+      <div class="absolute bottom-2 left-2 text-[10px] px-2 py-0.5 rounded bg-black/50 text-white">← <span data-i18n="result.original">原图</span></div>
+      <div class="absolute bottom-2 right-2 text-[10px] px-2 py-0.5 rounded bg-black/50 text-white"><span data-i18n="result.styled">风格化</span> →</div>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-2 items-center">
+      <a id="downloadBtn" class="hidden px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium" data-i18n="result.download">⬇ 下载结果</a>
+      <span id="genLoading" class="hidden items-center gap-2 text-sm text-slate-500"><span class="spinner"></span> <span data-i18n="result.generating">正在生成，约 10–30 秒…</span></span>
+    </div>
+  </section>
+
+  <!-- ============ Gallery ============ -->
+  <section id="gallerySection" class="hidden mt-12">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold" data-i18n="gallery.title">全部风格画廊</h2>
+      <span id="galleryProgress" class="text-xs text-slate-400"></span>
+    </div>
+    <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden mb-5">
+      <div id="galleryBar" class="h-full bg-gradient-to-r from-brand-500 to-pink-500 transition-all duration-300" style="width:0%"></div>
+    </div>
+    <div id="galleryGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+  </section>
+
+</main>
+
+<!-- ============ Footer ============ -->
+<footer class="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
+  <p data-i18n="footer.disclosure">本工具使用 AI 生成内容。在抖音等平台发布时，请按平台要求标注「含 AI 生成内容」。</p>
+  <p class="mt-2"><span data-i18n="footer.made">由</span> <a href="https://github.com/RazorEdge-wyh/StyleSnap" class="text-brand-600 hover:underline">StyleSnap</a> <span data-i18n="footer.opensource">开源驱动 · 照片 + 提示词 → 百种风格</span></p>
+</footer>
+
+<script>
+/* ============================== i18n ============================== */
+const I18N = {
+  zh: {
+    tagline: '照片 + 提示词 → 百种风格',
+    'hero.title1': '一张照片',
+    'hero.title2': '百种风格',
+    'hero.sub': '上传你的照片，选一个风格，AI 自动搭配好提示词，一键生成「平行世界的你」。全程无需写提示词，也可自由编辑。',
+    'hero.point1': '✓ 身份保持 · 更像你', 'hero.point2': '✓ 免写提示词 · 即选即用', 'hero.point3': '✓ 前后对比 · 一键全部',
+    'upload.title': '拖拽照片到这里，或点击上传',
+    'upload.hint': '支持 JPG / PNG / WebP，建议人物正面照，效果最佳',
+    'editor.subject': '照片主体描述（subject）',
+    'editor.subjectPh': 'this person — 例如：a smiling girl in a dress',
+    'editor.prompt': 'AI 提示词（可自由编辑）',
+    'editor.reset': '重置模板',
+    'editor.generate': '生成此风格',
+    'editor.batch': '一键全部风格',
+    'styles.title': '选择风格',
+    'result.title': '结果',
+    'result.original': '原图', 'result.styled': '风格化',
+    'result.download': '⬇ 下载结果',
+    'result.generating': '正在生成，约 10–30 秒…',
+    'gallery.title': '全部风格画廊',
+    'mode.demo': '演示模式', 'mode.real': '真实生成',
+    'mode.demoHint': '未配置 API Token，当前输出为演示效果',
+    'footer.disclosure': '本工具使用 AI 生成内容。在抖音等平台发布时，请按平台要求标注「含 AI 生成内容」。',
+    'footer.made': '由', 'footer.opensource': '开源驱动 · 照片 + 提示词 → 百种风格',
+    'cat.all': '全部',
+    'cost': '真实模式下每张约 $0.01–0.05',
+  },
+  en: {
+    tagline: 'One photo + a prompt → any style',
+    'hero.title1': 'One photo,',
+    'hero.title2': 'every style',
+    'hero.sub': 'Upload your photo, pick a style, and the AI composes the prompt for you — instantly turning you into the “you of a parallel world”. No prompt writing needed, fully editable.',
+    'hero.point1': '✓ Identity kept · still you', 'hero.point2': '✓ No prompt writing · click & go', 'hero.point3': '✓ Before/after · generate all',
+    'upload.title': 'Drag & drop your photo, or click to upload',
+    'upload.hint': 'JPG / PNG / WebP. A front-facing portrait works best.',
+    'editor.subject': 'Subject description',
+    'editor.subjectPh': 'this person — e.g. a smiling girl in a dress',
+    'editor.prompt': 'AI prompt (fully editable)',
+    'editor.reset': 'Reset template',
+    'editor.generate': 'Generate this style',
+    'editor.batch': 'Generate ALL styles',
+    'styles.title': 'Pick a style',
+    'result.title': 'Result',
+    'result.original': 'Original', 'result.styled': 'Styled',
+    'result.download': '⬇ Download',
+    'result.generating': 'Generating, ~10–30s…',
+    'gallery.title': 'All-styles gallery',
+    'mode.demo': 'Demo mode', 'mode.real': 'Live',
+    'mode.demoHint': 'No API token configured, showing demo output',
+    'footer.disclosure': 'This tool generates content with AI. When posting on social platforms, label it as AI-generated as required.',
+    'footer.made': 'Powered by', 'footer.opensource': 'open source · photo + prompt → any style',
+    'cat.all': 'All',
+    'cost': '~$0.01–0.05 per image in live mode',
+  }
+};
+
+let LANG = 'zh';
+const t = (k) => (I18N[LANG] && I18N[LANG][k]) || (I18N.zh[k] || k);
+
+function applyLang() {
+  const saved = localStorage.getItem('stylesnap_lang');
+  LANG = saved || ((navigator.language || 'zh').toLowerCase().startsWith('zh') ? 'zh' : 'en');
+  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  document.getElementById('langZh').classList.toggle('bg-brand-600', LANG==='zh');
+  document.getElementById('langZh').classList.toggle('text-white', LANG==='zh');
+  document.getElementById('langEn').classList.toggle('bg-brand-600', LANG==='en');
+  document.getElementById('langEn').classList.toggle('text-white', LANG==='en');
+  document.getElementById('title').textContent = `StyleSnap · ${t('tagline')}`;
+  renderCategoryChips(); renderStyles();
+  updateModeBadge();
+}
+
+/* ============================== State ============================== */
+let STYLES = [];
+let CATEGORIES = [];
+let imageFile = null;
+let imageUrl = null;
+let activeCategory = 'all';
+let selectedStyle = null;
+let promptTouched = false;
+let results = [];
+let serverMode = 'demo';
+
+const $ = (id) => document.getElementById(id);
+
+/* ============================== Init ============================== */
+(async function init() {
+  applyLang();
+  $('langZh').addEventListener('click', () => { localStorage.setItem('stylesnap_lang','zh'); applyLang(); });
+  $('langEn').addEventListener('click', () => { localStorage.setItem('stylesnap_lang','en'); applyLang(); });
+
+  // 加载风格库 / load style library
+  try {
+    const res = await fetch('/api/styles?lang=' + (LANG==='zh'?'zh':'en'));
+    const data = await res.json();
+    STYLES = data.styles; CATEGORIES = data.categories;
+  } catch (e) {
+    console.error(e); return;
+  }
+  try {
+    const h = await fetch('/api/health').then(r=>r.json());
+    serverMode = h.mode;
+  } catch(e){}
+  renderCategoryChips(); renderStyles(); updateModeBadge();
+  setupUpload();
+  setupCompare();
+  setupEditor();
+})();
+
+/* ============================== Mode badge ============================== */
+function updateModeBadge() {
+  const b = $('modeBadge');
+  b.classList.remove('hidden');
+  b.className = 'items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ' +
+    (serverMode==='replicate' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200');
+  b.innerHTML = (serverMode==='replicate' ? '🟢 ' : '🟡 ') + t('mode.'+(serverMode==='replicate'?'real':'demo')) +
+    (serverMode==='demo' ? ` · <span class="opacity-70">${t('mode.demoHint')}</span>` : '');
+  $('costHint').classList.toggle('hidden', serverMode !== 'replicate');
+  if (serverMode==='replicate') $('costHint').textContent = t('cost');
+}
+
+/* ============================== Upload ============================== */
+function setupUpload() {
+  const dz = $('dropzone'), fi = $('fileInput');
+  dz.addEventListener('click', () => fi.click());
+  fi.addEventListener('change', () => { if (fi.files[0]) handleFile(fi.files[0]); });
+  ['dragover','drop'].forEach(ev => dz.addEventListener(ev, (e)=>{ e.preventDefault(); }));
+  dz.addEventListener('dragover', () => dz.classList.add('border-brand-400','bg-brand-50/50'));
+  dz.addEventListener('dragleave', () => dz.classList.remove('border-brand-400','bg-brand-50/50'));
+  dz.addEventListener('drop', (e) => { dz.classList.remove('border-brand-400','bg-brand-50/50'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+  $('removeBtn').addEventListener('click', (e)=>{ e.stopPropagation(); clearImage(); });
+}
+
+function handleFile(file) {
+  if (!file.type.startsWith('image/')) { alert('请上传图片 / Please upload an image'); return; }
+  if (file.size > 15*1024*1024) { alert('图片过大 / Image too large (max 15MB)'); return; }
+  imageFile = file;
+  if (imageUrl) URL.revokeObjectURL(imageUrl);
+  imageUrl = URL.createObjectURL(file);
+  $('preview').src = imageUrl;
+  $('dropzone').classList.add('hidden');
+  $('editor').classList.remove('hidden');
+  syncPrompt();
+}
+
+function clearImage() {
+  imageFile = null; if (imageUrl) URL.revokeObjectURL(imageUrl); imageUrl = null;
+  $('editor').classList.add('hidden');
+  $('dropzone').classList.remove('hidden');
+  $('resultSection').classList.add('hidden');
+}
+
+/* ============================== Styles ============================== */
+function renderCategoryChips() {
+  const wrap = $('categoryChips');
+  const cats = [{key:'all', name_zh:t('cat.all'), name_en:t('cat.all')}, ...CATEGORIES];
+  wrap.innerHTML = '';
+  cats.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'text-sm px-3.5 py-1.5 rounded-full border transition font-medium ' +
+      (activeCategory===c.key ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-600 border-slate-200 hover:border-brand-300');
+    btn.textContent = LANG==='zh' ? c.name_zh : c.name_en;
+    btn.addEventListener('click', () => { activeCategory = c.key; renderCategoryChips(); renderStyles(); });
+    wrap.appendChild(btn);
+  });
+}
+
+function renderStyles() {
+  const grid = $('styleGrid');
+  grid.innerHTML = '';
+  const list = STYLES.filter(s => activeCategory==='all' || s.category===activeCategory);
+  $('styleCount').textContent = `${list.length}/${STYLES.length}`;
+  list.forEach(s => {
+    const card = document.createElement('button');
+    card.className = 'card-hover text-left bg-white rounded-2xl p-4 border border-slate-200 shadow-sm ' +
+      (selectedStyle && selectedStyle.id===s.id ? 'card-selected' : '');
+    card.innerHTML = `
+      <div class="text-3xl">${s.emoji}</div>
+      <div class="mt-2 font-semibold text-sm">${s.name}</div>
+      <div class="mt-0.5 text-xs text-slate-400 leading-snug">${s.desc}</div>
+      <div class="mt-2 text-[10px] text-slate-300 font-mono truncate">${s.prompt.slice(0,44)}…</div>`;
+    card.addEventListener('click', () => selectStyle(s));
+    grid.appendChild(card);
+  });
+}
+
+function selectStyle(s) {
+  selectedStyle = s;
+  promptTouched = false;
+  renderStyles();
+  syncPrompt();
+  $('generateStyleName').textContent = s.name;
+  $('editor').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+/* ============================== Prompt editor ============================== */
+function currentPrompt() {
+  if (!selectedStyle) return '';
+  const subj = $('subjectInput').value.trim() || 'this person';
+  if (promptTouched) return $('promptInput').value;
+  return selectedStyle.prompt.replaceAll('{subject}', subj);
+}
+function syncPrompt() {
+  if (selectedStyle && !promptTouched) $('promptInput').value = currentPrompt();
+}
+$('subjectInput') && ($('subjectInput').addEventListener('input', syncPrompt));
+$('promptInput') && ($('promptInput').addEventListener('input', () => { promptTouched = true; }));
+$('resetPromptBtn') && ($('resetPromptBtn').addEventListener('click', () => { promptTouched = false; syncPrompt(); }));
+
+/* ============================== Compare slider ============================== */
+function setupCompare() {
+  const range = $('cmpRange');
+  range.addEventListener('input', () => {
+    const x = range.value;
+    $('cmpResultWrap').style.clipPath = `inset(0 ${100-x}% 0 0)`;
+    $('cmpHandle').style.left = x + '%';
+  });
+}
+
+function showResult(resultUrl, originalUrl) {
+  $('cmpOriginal').src = originalUrl;
+  $('cmpResult').src = resultUrl;
+  $('resultSection').classList.remove('hidden');
+  $('compare').classList.remove('hidden');
+  const range = $('cmpRange'); range.value = 50;
+  $('cmpResultWrap').style.clipPath = 'inset(0 50% 0 0)';
+  $('cmpHandle').style.left = '50%';
+  $('downloadBtn').href = resultUrl;
+  $('downloadBtn').classList.remove('hidden');
+  $('resultMode').textContent = (serverMode==='replicate' ? t('mode.real') : t('mode.demo')) + ' · ' + t('result.styled');
+  $('resultSection').scrollIntoView({behavior:'smooth'});
+}
+
+/* ============================== Generate ============================== */
+function buildForm(style) {
+  const fd = new FormData();
+  fd.append('image', imageFile);
+  fd.append('style_id', style.id);
+  fd.append('subject', $('subjectInput').value.trim() || 'this person');
+  fd.append('prompt', $('promptInput').value);
+  return fd;
+}
+
+async function genOne(style, opts={}) {
+  const loading = $('genLoading');
+  if (opts.single) { loading.classList.remove('hidden'); loading.classList.add('flex'); }
+  try {
+    const res = await fetch('/api/transform', { method:'POST', body: buildForm(style) });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.detail || res.statusText); }
+    const data = await res.json();
+    if (opts.single) showResult(data.output_url, imageUrl);
+    return data;
+  } finally {
+    if (opts.single) { loading.classList.add('hidden'); loading.classList.remove('flex'); }
+  }
+}
+
+$('generateBtn') && ($('generateBtn').addEventListener('click', async () => {
+  if (!imageFile) { alert(t('upload.title')); return; }
+  if (!selectedStyle) { alert(t('styles.title')); return; }
+  try { await genOne(selectedStyle, {single:true}); }
+  catch(e){ alert('生成失败 / Generation failed: ' + e.message); }
+}));
+
+$('batchBtn') && ($('batchBtn').addEventListener('click', async () => {
+  if (!imageFile) { alert(t('upload.title')); return; }
+  const list = STYLES.filter(s => activeCategory==='all' || s.category===activeCategory);
+  if (!list.length) return;
+  const btn = $('batchBtn'); btn.disabled = true;
+  $('gallerySection').classList.remove('hidden');
+  $('galleryGrid').innerHTML = '';
+  results = [];
+  for (let i=0; i<list.length; i++) {
+    const s = list[i];
+    $('galleryProgress').textContent = `${i+1}/${list.length} · ${s.name}`;
+    $('galleryBar').style.width = ((i)/list.length*100) + '%';
+    const cell = document.createElement('div');
+    cell.className = 'fade-in bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm';
+    cell.innerHTML = `<div class="relative bg-slate-100" style="aspect-ratio:1"><div class="absolute inset-0 flex items-center justify-center"><span class="spinner"></span></div></div>
+      <div class="p-2.5 flex items-center justify-between"><div class="min-w-0"><div class="text-sm font-semibold truncate">${s.emoji} ${s.name}</div></div></div>`;
+    $('galleryGrid').appendChild(cell);
+    try {
+      const data = await genOne(s, {});
+      const imgWrap = cell.querySelector('.relative');
+      imgWrap.innerHTML = `<img src="${data.output_url}" class="w-full h-full object-cover" style="aspect-ratio:1" alt="${s.name}">`;
+      const footer = cell.querySelector('div.p-2\.5 > div');
+      footer.insertAdjacentHTML('afterend', `<a href="${data.output_url}" download class="text-xs text-brand-600 hover:underline">⬇</a>`);
+    } catch(e) {
+      const imgWrap = cell.querySelector('.relative');
+      imgWrap.innerHTML = `<div class="absolute inset-0 flex items-center justify-center text-xs text-red-400">✕</div>`;
+    }
+    $('galleryBar').style.width = ((i+1)/list.length*100) + '%';
+  }
+  $('galleryProgress').textContent = `${list.length}/${list.length} ✓`;
+  btn.disabled = false;
+}));
+</script>
+</body>
+</html>

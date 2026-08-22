@@ -1,0 +1,255 @@
+# =============================================================================
+# StyleSnap 提示词库 / Prompt Library
+# -----------------------------------------------------------------------------
+# 每个风格 = 一段精心搭配的提示词模板。{subject} 会被替换为用户上传照片的
+# 主体描述（默认 "this person"），用户也可在前端自由编辑。
+# Each style = a hand-crafted prompt template. {subject} is replaced with the
+# subject of the uploaded photo (default "this person"), editable in the UI.
+#
+# params:
+#   identitynet — IdentityNet 强度（越大越像本人，过高会过饱和）
+#   adapter     — IP-Adapter 细节保持强度（越大细节越多，过高影响风格化）
+#   steps       — 推理步数（LCM 加速时 4–10 步即可）
+#   guidance    — CFG 引导强度
+# =============================================================================
+
+common_negative: "watermark, signature, text, lowres, blurry, deformed, extra fingers, bad hands, disfigured, ugly, duplicate, oversaturated, realistic photo"
+
+styles:
+  # ---------------- 动漫 Anime ----------------
+  - id: anime
+    emoji: 🌸
+    category: anime
+    name_zh: 日漫·新海诚
+    name_en: Anime (Shinkai)
+    desc_zh: 新海诚式唯美光影，天空与光斑
+    desc_en: Makoto Shinkai's luminous skies & light rays
+    prompt: "A anime artwork of {subject}, Makoto Shinkai style, beautiful anime background, dramatic sky, light rays, anime screening, trending on artstation, high quality"
+    params: { identitynet: 0.8, adapter: 0.8, steps: 30, guidance: 5 }
+
+  - id: ghibli
+    emoji: 🏔️
+    category: anime
+    name_zh: 吉卜力
+    name_en: Studio Ghibli
+    desc_zh: 手绘宫崎骏，温暖童话质感
+    desc_en: Hand-painted Hayao Miyazaki warmth
+    prompt: "A Studio Ghibli style artwork of {subject}, hand-painted, soft watercolor background, Hayao Miyazaki, whimsical, cozy, high quality"
+    params: { identitynet: 0.75, adapter: 0.8, steps: 30, guidance: 5 }
+
+  - id: chibi
+    emoji: 🧸
+    category: anime
+    name_zh: Q版萌化
+    name_en: Chibi Kawaii
+    desc_zh: 大头小身，超可爱Q版
+    desc_en: Big head, tiny body, ultra cute
+    prompt: "A chibi kawaii artwork of {subject}, big head small body, super cute, adorable, vibrant colors, clean lineart, high quality"
+    params: { identitynet: 0.6, adapter: 0.7, steps: 30, guidance: 5 }
+
+  - id: manga
+    emoji: 🖋️
+    category: anime
+    name_zh: 日系漫画
+    name_en: Manga
+    desc_zh: 黑白网点漫画插画
+    desc_en: B&W screentone manga illustration
+    prompt: "A manga illustration of {subject}, japanese comic style, clean lineart, screentone shading, dynamic composition, high quality"
+    negative_prompt: "color, watermark, signature, text, lowres, blurry, deformed, extra fingers, bad hands, disfigured, ugly, duplicate"
+    params: { identitynet: 0.75, adapter: 0.8, steps: 30, guidance: 5 }
+
+  - id: pixel
+    emoji: 👾
+    category: anime
+    name_zh: 像素风
+    name_en: Pixel Art
+    desc_zh: 8-bit 复古游戏角色
+    desc_en: 8-bit retro game character
+    prompt: "A pixel art portrait of {subject}, 8-bit retro video game style, pixelated, limited palette, retro gaming, high quality"
+    params: { identitynet: 0.6, adapter: 0.6, steps: 30, guidance: 5 }
+
+  # ---------------- 影视 / 3D Film & 3D ----------------
+  - id: pixar
+    emoji: 🎬
+    category: film3d
+    name_zh: 皮克斯3D
+    name_en: Pixar 3D
+    desc_zh: 大眼睛3D动画电影角色
+    desc_en: Big-eyed 3D animated movie character
+    prompt: "A Pixar 3D animated movie character of {subject}, big expressive eyes, soft studio lighting, highly detailed 3D render, cinematic, high quality"
+    params: { identitynet: 0.8, adapter: 0.8, steps: 30, guidance: 5 }
+
+  - id: clay
+    emoji: 🎨
+    category: film3d
+    name_zh: 黏土动画
+    name_en: Claymation
+    desc_zh: 手工黏土定格动画质感
+    desc_en: Handmade stop-motion clay look
+    prompt: "A claymation character of {subject}, handmade clay texture, stop-motion animation style, soft studio light, fingerprint texture, high quality"
+    params: { identitynet: 0.75, adapter: 0.75, steps: 30, guidance: 5 }
+
+  - id: lego
+    emoji: 🧱
+    category: film3d
+    name_zh: 乐高小人
+    name_en: LEGO Minifigure
+    desc_zh: 塑料积木玩具人偶
+    desc_en: Plastic brick toy minifigure
+    prompt: "A LEGO minifigure of {subject}, plastic toy figure, bright colors, toy photography, shallow depth of field, high quality"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
+  - id: toy
+    emoji: 🧿
+    category: film3d
+    name_zh: 潮玩手办
+    name_en: Vinyl Toy
+    desc_zh: 设计师公仔，亮面收藏玩具
+    desc_en: Designer collectible vinyl figure
+    prompt: "A designer vinyl toy figure of {subject}, collectible art toy, glossy finish, product shot, studio lighting, high quality"
+    params: { identitynet: 0.75, adapter: 0.75, steps: 30, guidance: 5 }
+
+  - id: 3drender
+    emoji: 💎
+    category: film3d
+    name_zh: 3D渲染
+    name_en: 3D Render
+    desc_zh: 电影级 3D 写实渲染
+    desc_en: Cinematic photoreal 3D render
+    prompt: "A 3D render of {subject}, cinematic lighting, octane render, subsurface scattering, highly detailed, photoreal, high quality"
+    params: { identitynet: 0.8, adapter: 0.8, steps: 30, guidance: 5 }
+
+  # ---------------- 艺术 Art ----------------
+  - id: oil
+    emoji: 🖼️
+    category: art
+    name_zh: 油画
+    name_en: Oil Painting
+    desc_zh: 梵高式厚涂笔触
+    desc_en: Van Gogh impasto brushstrokes
+    prompt: "An oil painting of {subject}, oil painting, impasto brushstrokes, masterpiece, rich colors, canvas texture, high quality"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
+  - id: watercolor
+    emoji: 🌊
+    category: art
+    name_zh: 水彩
+    name_en: Watercolor
+    desc_zh: 柔和晕染，纸张纹理
+    desc_en: Soft washes & paper texture
+    prompt: "A watercolor painting of {subject}, watercolor style, soft washes, paper texture, pastel palette, beautiful artwork, high quality"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
+  - id: sketch
+    emoji: ✏️
+    category: art
+    name_zh: 素描
+    name_en: Pencil Sketch
+    desc_zh: 石墨铅笔精细素描
+    desc_en: Detailed graphite pencil drawing
+    prompt: "A pencil sketch of {subject}, graphite pencil drawing, detailed shading, hatching, monochrome, artist sketch, high quality"
+    negative_prompt: "color, watermark, signature, text, lowres, blurry, deformed, extra fingers, bad hands, disfigured, ugly, duplicate"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
+  - id: ukiyoe
+    emoji: 🌊
+    category: art
+    name_zh: 浮世绘
+    name_en: Ukiyo-e
+    desc_zh: 葛饰北斋木版画
+    desc_en: Hokusai woodblock print
+    prompt: "A ukiyo-e woodblock print of {subject}, Hokusai style, japanese traditional art, ink and color, woodcut texture, high quality"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
+  # ---------------- 科幻 Sci-fi ----------------
+  - id: cyberpunk
+    emoji: 🌆
+    category: scifi
+    name_zh: 赛博朋克
+    name_en: Cyberpunk
+    desc_zh: 霓虹夜景，赛博都市
+    desc_en: Neon nights in the cyber city
+    prompt: "A cyberpunk style {subject}, neon lights, futuristic, rain reflections, highly detailed, teal and magenta palette, cinematic"
+    params: { identitynet: 0.8, adapter: 0.8, steps: 30, guidance: 5 }
+
+  - id: robot
+    emoji: 🤖
+    category: scifi
+    name_zh: 机器人
+    name_en: Robot
+    desc_zh: 未来仿生人形态
+    desc_en: Futuristic android form
+    prompt: "A robot version of {subject}, futuristic android, metallic panels, glowing details, sci-fi, highly detailed"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
+  - id: mecha
+    emoji: 🦾
+    category: scifi
+    name_zh: 机甲
+    name_en: Mecha
+    desc_zh: 高达式巨型机甲
+    desc_en: Gundam-style giant mecha
+    prompt: "A mecha anime version of {subject}, giant robot pilot, gundam style, sci-fi mecha, highly detailed, dramatic lighting"
+    params: { identitynet: 0.75, adapter: 0.75, steps: 30, guidance: 5 }
+
+  # ---------------- 古风 Traditional ----------------
+  - id: guofeng
+    emoji: 🏮
+    category: guofeng
+    name_zh: 国风写真
+    name_en: Chinese Aesthetic
+    desc_zh: 中式古典唯美人像
+    desc_en: Elegant traditional portrait
+    prompt: "A chinese traditional style portrait of {subject}, elegant, guofeng, beautiful, classical chinese art, high quality"
+    params: { identitynet: 0.8, adapter: 0.8, steps: 30, guidance: 5 }
+
+  - id: hanfu
+    emoji: 🎐
+    category: guofeng
+    name_zh: 汉服
+    name_en: Hanfu
+    desc_zh: 身穿汉服，穿越千年
+    desc_en: Hanfu robes, a thousand years back
+    prompt: "A chinese hanfu portrait of {subject}, traditional chinese clothing, elegant, flowing silk, guofeng, high quality"
+    params: { identitynet: 0.8, adapter: 0.8, steps: 30, guidance: 5 }
+
+  - id: inkwash
+    emoji: 🖌️
+    category: guofeng
+    name_zh: 水墨
+    name_en: Ink Wash
+    desc_zh: 泼墨山水意境
+    desc_en: Minimalist shuimo ink wash
+    prompt: "An ink wash painting of {subject}, shuimo, chinese ink art, minimalist, elegant, negative space, high quality"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
+  # ---------------- 趣味 Fun ----------------
+  - id: cat
+    emoji: 🐱
+    category: fun
+    name_zh: 猫咪
+    name_en: Cat
+    desc_zh: 上辈子的我可能是个猫
+    desc_en: My past life might've been a cat
+    prompt: "An adorable anthropomorphic cat version of {subject}, cat ears and tail, fluffy fur, cute, kawaii, soft lighting, high quality"
+    params: { identitynet: 0.6, adapter: 0.6, steps: 30, guidance: 5 }
+
+  - id: doll
+    emoji: 🧵
+    category: fun
+    name_zh: 布偶娃娃
+    name_en: Plush Doll
+    desc_zh: 手工缝制毛绒玩偶
+    desc_en: Handmade stitched plush doll
+    prompt: "A handmade plush doll version of {subject}, soft fabric, stitched details, button eyes, adorable, high quality"
+    params: { identitynet: 0.65, adapter: 0.65, steps: 30, guidance: 5 }
+
+  - id: goldstatue
+    emoji: 🏛️
+    category: fun
+    name_zh: 黄金雕像
+    name_en: Golden Statue
+    desc_zh: 传世金像，博物馆灯光
+    desc_en: Museum-lit golden statue
+    prompt: "A golden statue of {subject}, bronze gold sculpture, museum lighting, classical art, polished metal, high quality"
+    params: { identitynet: 0.8, adapter: 0.8, steps: 30, guidance: 5 }
