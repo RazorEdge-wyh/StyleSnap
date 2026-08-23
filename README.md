@@ -152,3 +152,7 @@ docker run -p 8000:8000 --env-file .env stylesnap
 ---
 
 **如果这个项目帮到了你，欢迎 ⭐ Star。** / If this helps you, a ⭐ would be awesome.
+
+---
+
+© 2026 [王越豪（湖南科技大学 26 届）](https://github.com/RazorEdge-wyh)
