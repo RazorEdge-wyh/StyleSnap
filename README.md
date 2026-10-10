@@ -4,8 +4,8 @@
 
 **一张照片，百种风格 · One photo, every style**
 
-照片 + 提示词 → 风格化人像的开源实现。内置 **23 种手工调校的风格提示词库**，身份保持，一键多风格出图。
-The open-source way to turn *one photo + a prompt* into stylized portraits. Ships with **23 hand-tuned style prompts**, identity preservation, and one-click multi-style generation.
+照片 + 提示词 → 风格化人像的开源实现。内置 **24 种手工调校的风格提示词库**，身份保持，一键多风格出图。
+The open-source way to turn *one photo + a prompt* into stylized portraits. Ships with **24 hand-tuned style prompts**, identity preservation, and one-click multi-style generation.
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10+-green.svg)](https://www.python.org/)
@@ -22,13 +22,13 @@ The open-source way to turn *one photo + a prompt* into stylized portraits. Ship
 
 爆款的秘密其实藏在**提示词**里。StyleSnap 把这件事产品化：
 
-- 内置 **23 种**手工调校的提示词（正向 + 负向 + 参数），**免写提示词**，点一下就好；
+- 内置 **24 种**手工调校的提示词（正向 + 负向 + 参数），**免写提示词**，点一下就好；
 - 基于 **InstantID**（身份保持最强）的真实生成，也可自定义提示词；
 - **一键全部风格**：一张照片批量出全部风格，支持**前后对比滑块**与画廊下载；
 - **中英双语界面**，浏览器语言自动切换；
 - 无 API 密钥也能用 —— 内置**演示模式**跑通整个产品流程。
 
-> The viral "photo metamorphosis" trick on Douyin/Xiaohongshu — upload your photo, let AI redraw you as anime, Pixar, cyberpunk, hanfu or a cat. The real secret is in the **prompts**. StyleSnap productizes it: 23 hand-tuned prompts, InstantID identity preservation, one-click all-styles generation, before/after comparison, bilingual UI, and a no-key **demo mode**.
+> The viral "photo metamorphosis" trick on Douyin/Xiaohongshu — upload your photo, let AI redraw you as anime, Pixar, cyberpunk, hanfu or a cat. The real secret is in the **prompts**. StyleSnap productizes it: 24 hand-tuned prompts, InstantID identity preservation, one-click all-styles generation, before/after comparison, bilingual UI, and a no-key **demo mode**.
 
 ## 🖼️ 效果展示 / Demo
 
@@ -113,7 +113,7 @@ stylesnap/
 │   ├── providers.py     # Replicate InstantID + MockProvider
 │   └── config.py        # 环境变量 / 自动加载 .env
 ├── frontend/index.html  # 单页 UI（Tailwind CDN + 原生 JS + i18n）
-├── styles.yaml          # ★ 提示词库（23 种风格）
+├── styles.yaml          # ★ 提示词库（24 种风格）
 ├── run.py               # 启动脚本
 ├── Dockerfile
 └── docs/demo-gallery.jpg

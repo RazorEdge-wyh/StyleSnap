@@ -223,6 +223,16 @@ styles:
     prompt: "An ink wash painting of {subject}, shuimo, chinese ink art, minimalist, elegant, negative space, high quality"
     params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
 
+  - id: papercut
+    emoji: ✂️
+    category: guofeng
+    name_zh: 剪纸
+    name_en: Paper Cut
+    desc_zh: 中国民间剪纸，红色镂空
+    desc_en: Chinese folk paper-cut, red cutout
+    prompt: "A chinese paper-cut artwork of {subject}, traditional folk art, red paper, intricate cutout patterns, symmetrical, flat, high quality"
+    params: { identitynet: 0.7, adapter: 0.7, steps: 30, guidance: 5 }
+
   # ---------------- 趣味 Fun ----------------
   - id: cat
     emoji: 🐱
